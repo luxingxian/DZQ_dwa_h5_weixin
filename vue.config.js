@@ -79,7 +79,7 @@ module.exports = {
     // 更多代理设置请看：https://github.com/chimurai/http-proxy-middleware#options
     proxy: {
       '/api': {
-        target: 'https://www.dawenan.com',
+        target: 'http://www.70wenan.com',
         changeOrigin: true,
         ws: true,
         // pathRewrite: {
@@ -87,7 +87,7 @@ module.exports = {
         // },
       },
     },
-	https:true
+	// https:true
 		// proxy: {
 		//   '/api': {
 		//     target: 'https://www.dawenan.com',

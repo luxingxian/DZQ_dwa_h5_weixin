@@ -231,13 +231,8 @@ created(){
 		sharePoster(){
 		     this.$refs.poster.row=0;
 		     this.$refs.poster.spliceStr(this.subTitle);
-		    //  this.$refs.poster.changename(this.username);
-		     this.$refs.poster.upDateHeight();
 		     setTimeout(() => {
-		          this.$refs.poster.showCanvas();
-		        //  setTimeout(() => {
-		        //   this.$refs.poster.showCanvas();
-		        // }, 200);
+		        this.$refs.poster.showCanvas();
 		     }, 200);
 		      
 		   },
