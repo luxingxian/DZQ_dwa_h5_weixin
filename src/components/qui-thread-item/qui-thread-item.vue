@@ -46,8 +46,16 @@
       @videoPlay="handleVideoPlay"
     ></qui-content>
     <uni-popup ref="popupContent" type="bottom">
-      <qui-share @close="cancel" share-type="content" :now-thread-id="nowThreadId"></qui-share>
+      <qui-share @close="cancel" share-type="content" :now-thread-id="nowThreadId" @shareContent="shareContent"></qui-share>
     </uni-popup>
+		<!-- 生成海报组件 -->
+		<qui-create-poster
+		     ref="poster"  
+		     :subTitle="subTitle" 
+		     :headerImg="headerImg"
+		     :username="username"
+		 					:threadId="threadId"
+		     ></qui-create-poster>
   </view>
 </template>
 
@@ -81,6 +89,10 @@ export default {
   },
   data() {
     return {
+			subTitle:'',
+			headerImg:'',
+			username:'',
+			threadId:'',
       isLiked: false, // 主题点赞状态
       shareShow: false, // h5内分享提示信息
       shareTitle: '', // h5内分享复制链接
@@ -179,14 +191,25 @@ export default {
         // #endif
         return;
       }
+			this.headerImg='';
+			this.subTitle='';
+			this.username='';
+			this.threadId = id;
+			const shareThread = this.$store.getters['jv/get'](`threads/${id}`);
+			if(shareThread.firstPost.images.length>0) {
+			    this.headerImg = shareThread.firstPost.images[0].url;
+			 }
+			 if(shareThread.firstPost.contentHtml){
+					  this.subTitle = shareThread.firstPost.contentHtml;
+					  this.username = shareThread.user.username;
+			 }
       // #ifdef MP-WEIXIN
       this.$emit('handleClickShare', id);
       this.nowThreadId = id;
       this.$refs.popupContent.open();
       // #endif
       // #ifdef H5
-      const shareThread = this.$store.getters['jv/get'](`threads/${id}`);
-      if (shareThread.type === 1) {
+			if (shareThread.type === 1) {
         this.shareTitle = shareThread.title;
       } else {
         this.shareTitle = shareThread.firstPost.summaryText;
@@ -198,6 +221,18 @@ export default {
       });
       // #endif
     },
+		shareContent(index){
+			this.sharePoster();
+			this.cancel();
+		},
+		sharePoster(){
+		     this.$refs.poster.row=0;
+		     this.$refs.poster.spliceStr(this.subTitle);
+		     setTimeout(() => {
+		        this.$refs.poster.showCanvas();
+		     }, 200);
+		      
+		   },
   },
 };
 </script>

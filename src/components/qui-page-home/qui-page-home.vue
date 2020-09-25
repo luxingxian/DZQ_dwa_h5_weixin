@@ -260,7 +260,16 @@
 			color="#222">
 			</qui-icon>
 		</view>
+		<!-- 生成海报组件 -->
+		<qui-create-poster
+		     ref="poster"  
+		     :subTitle="subTitle" 
+		     :headerImg="headerImg"
+		     :username="username"
+		 					:threadId="threadId"
+		     ></qui-create-poster>
 	 </view>
+	
 </template>
 
 <script>
@@ -304,6 +313,10 @@ export default {
   },
   data() {
     return {
+		subTitle:'',
+		headerImg:'',
+		username:'',
+		threadId:'',
       navBarTransform,
       // suspended: false, // 是否吸顶状态
       checkoutTheme: false, // 切换主题  搭配是否吸顶使用
@@ -854,6 +867,18 @@ export default {
         // #endif
         return;
       }
+	  this.headerImg='';
+	  this.subTitle='';
+	  this.username='';
+	  this.threadId = id;
+	  const shareThread = this.$store.getters['jv/get'](`threads/${id}`);
+	  if(shareThread.firstPost.images.length>0) {
+	      this.headerImg = shareThread.firstPost.images[0].url;
+	   }
+	   if(shareThread.firstPost.contentHtml){
+		  this.subTitle = shareThread.firstPost.contentHtml;
+		  this.username = shareThread.user.username;
+	   }
       // #ifdef MP-WEIXIN
       this.$emit('handleClickShare', id);
       this.nowThreadId = id;
@@ -871,7 +896,6 @@ export default {
       }
       // #endif
       // #ifdef H5
-      const shareThread = this.$store.getters['jv/get'](`threads/${id}`);
       if (shareThread.type === 1) {
         this.shareTitle = shareThread.title;
       } else {
@@ -887,12 +911,21 @@ export default {
     // 内容部分分享海报,跳到分享海报页面
     shareContent(index) {
       if (index === 0) {
-        uni.navigateTo({
-          url: `/pages/share/topic?id=${this.nowThreadId}`,
-        });
+        // uni.navigateTo({
+        //   url: `/pages/share/topic?id=${this.nowThreadId}`,
+        // });
+		this.sharePoster();
       }
       this.cancel();
     },
+	sharePoster(){
+	     this.$refs.poster.row=0;
+	     this.$refs.poster.spliceStr(this.subTitle);
+	     setTimeout(() => {
+	        this.$refs.poster.showCanvas();
+	     }, 200);
+	      
+	   },
     // 首页导航栏分类列表数据
     loadCategories() {
       this.$store.dispatch('jv/get', ['categories', {}]).then(data => {

@@ -86,9 +86,10 @@ export default {
           });
         }
       } else if (index === 0) {
-        uni.navigateTo({
-          url: `/pages/share/topic?id=${this.nowThreadId}`,
-        });
+				this.$emit("shareContent",index)
+        // uni.navigateTo({
+        //   url: `/pages/share/topic?id=${this.nowThreadId}`,
+        // });
       }
     },
   },

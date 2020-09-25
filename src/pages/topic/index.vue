@@ -597,6 +597,7 @@
 		    :subTitle="subTitle" 
 		    :headerImg="headerImg"
 		    :username="username"
+			:threadId="threadId"
 		    ></qui-create-poster>
   </qui-page>
 </template>
@@ -2575,9 +2576,10 @@ export default {
 			      duration: 2000,
 			    });
 			  } else {
-			    uni.navigateTo({
-			      url: `/pages/share/topic?id=${this.threadId}`,
-			    });
+			    // uni.navigateTo({
+			    //   url: `/pages/share/topic?id=${this.threadId}`,
+			    // });
+					this.sharePoster();
 			  }
 			}
 			// #endif

@@ -1,16 +1,27 @@
 <template>
 	<view class="content" v-if="isShow" @click.stop="close">
-		<view v-if="showtip" class='tipToast'>长按保存图片！</view>
+		
 		<canvas :style="{ width: canvasW + 'px', height: canvasH + 'px' }" canvas-id="my-canvas" class="isCan"></canvas>
 		<view v-if="showImg">
 			<img class="showImg" @longpress="longpress" :style="{ width: canvasW + 'px', height: canvasH + 'px' }" :src="tempImg"
 			 style="display: block;margin: 0 auto;border-radius:6px" />
+			 
 		</view>
+		<!-- #ifdef MP-WEIXIN -->
+		<qui-button v-if="showImg" type="primary" size="max" @click="saveImg" :style="{width:canvasW+'px'}" style="margin-top: 15px;">
+		  {{ i18n.t('share.savealbum') }}
+		</qui-button>
+		<!-- #endif -->
+		<!-- #ifdef H5 -->
+		<view v-if="showtip" class='tipToast'>长按保存图片！</view>
+		<!-- #endif -->
 	</view>
 </template>
 
 <script>
+	import forums from '@/mixin/forums';
 	export default {
+		mixins: [forums],
 		props: {
 			headerImg: {
 				type: String,
@@ -23,6 +34,9 @@
 			username: {
 				type: String,
 			},
+			threadId:{
+				type: String,
+			}
 		},
 		data() {
 			return {
@@ -46,23 +60,21 @@
 				textY:0,//文字区域开始坐标
 				lineheight:20,//行高
 				linelength:17,//每行长度
-				maxline:9//最大行数
+				maxline:9,//最大行数
+				jurisdiction:false,
+				userweixincode:'',
+				slitename:'分享自大文案',
+				longpressText:'长按识别小程序码查看详情'
+				
 			}
 		},
 
 		methods: {
-			stop() {
-				document.body.style.overflow = 'hidden'; //禁止页面划动
-			},
-			move() {
-				document.body.style.overflow = ''; //出现滚动条
-			},
 			// 点击关闭按钮
 			close() {
 				uni.hideLoading();
 				this.isShow = false;
 				this.tempImg = "";
-				this.move();
 			},
 
 			//显示
@@ -70,6 +82,7 @@
 				this.strList = [];
 				this.isShow = true
 				this.__init();
+				console.log(this.forums)
 			},
 			//初始化画布
 			async __init() {
@@ -85,6 +98,12 @@
 				this.ctx.fillRect(0, 0, this.canvasW, this.canvasH)
 				//画布中显示的文字行数
 				let linenum=0;
+				// #ifdef H5
+				let bottomH=0
+				// #endif
+				// #ifdef MP-WEIXIN
+				let bottomH=30
+				// #endif
 				if (this.headerImg != '') {
 					//获取标题图片
 					let headerImg = await this.getImageInfo(this.headerImg);
@@ -112,15 +131,26 @@
 					}
 					//绘制截取图片
 					this.ctx.drawImage(headerImg.path, this.x, this.y, this.w, this.h, 0, 0, this.imgWidth, this.imgHeight);
-					//有图片下文字在剩余高度居中显示（限制最多9行，居中显示）
-					this.maxline=9;
+					//有图片下文字在剩余高度居中显示（限制最多8行，居中显示）
+					
+					// #ifdef MP-WEIXIN
+					this.maxline=8;
+					// #endif
+					// #ifdef H5
+					this.maxline=10;
+					// #endif
 					linenum=this.row>this.maxline?this.maxline:this.row;
-					this.textY=((this.canvasH - this.imgHeight)-(linenum * this.lineheight))/2+this.imgHeight;
+					this.textY=((this.canvasH - this.imgHeight)-(linenum * this.lineheight)-bottomH)/2+this.imgHeight;
 				} else {
 					//无图片下文字在除底部的剩余高度居中（限制最多15行，居中显示）
+					// #ifdef MP-WEIXIN
 					this.maxline=16;
+					// #endif
+					// #ifdef H5
+					this.maxline=18;
+					// #endif
 					linenum=this.row>this.maxline?this.maxline:this.row;
-					this.textY=(this.canvasH-(linenum * this.lineheight))/2;
+					this.textY=(this.canvasH-(linenum * this.lineheight)-bottomH)/2;
 				}
 				//绘制内容
 				this.spliceStr(this.subTitle);
@@ -130,25 +160,49 @@
 				this.strList.forEach((element, index) => {
 					if(index==this.maxline-1&&element.length==this.linelength){
 						//第10行满行则截取后6位显示...
-						element=element.substring(0,this.linelength-5)+'...'
+						element=element.substring(0,this.linelength-3)+'...'
 					}else if(index>this.maxline-1){
 						return;
 					}
 					this.ctx.fillText(element, this.canvasW / 2,this.textY+this.lineheight*index)
 
 				});
-
+				// #ifdef MP-WEIXIN
+					//小程序码绘制
+					this.userweixincode= `${this.$u.host()}api/oauth/wechat/miniprogram/code?path=/pages/topic/index?id=${
+          this.threadId
+        }`//小程序码
+					let codeImg=await this.getImageInfo(this.userweixincode)
+					this.ctx.drawImage(codeImg.path, 0, 0, codeImg.height,codeImg.width, 15, this.canvasH-75,60,60);
+					//长按文字绘制
+					this.ctx.setFontSize(10);
+					this.ctx.textAlign = "left";
+					this.ctx.setFillStyle('#999');
+					this.ctx.fillText(this.longpressText, 85, this.canvasH - 50)
+					//大文案文字绘制
+					this.ctx.setFontSize(10);
+					this.ctx.textAlign = "left";
+					this.ctx.setFillStyle('#999');
+					this.ctx.fillText(this.slitename, 85, this.canvasH - 30)
+					
+				// #endif
+				
+				
+				// #ifdef H5
 				// 用户名称
 				this.ctx.setFontSize(10);
 				this.ctx.textAlign = "left";
 				this.ctx.setFillStyle('#999');
 				this.ctx.fillText(this.username, 15, this.canvasH - 15, 100)
-
+				
 				//大文案名称
 				this.ctx.setFontSize(10);
 				this.ctx.textAlign = "right";
 				this.ctx.setFillStyle('#999');
 				this.ctx.fillText(this.logo, this.canvasW - 15, this.canvasH - 15)
+				// #endif
+
+				
 
 				//延迟渲染
 				setTimeout(() => {
@@ -211,8 +265,34 @@
 				});
 			},
 
+			//生成图片
+			creatImage() {
+				var that = this
+				uni.canvasToTempFilePath({
+					canvasId: 'my-canvas',
+					quality: 1,
+					fileType: "jpg",
+					success: (res) => {
+						console.log('生成图片' + res);
+						that.tempImg = res.tempFilePath;
+						setTimeout(() => {
+							that.showImg=true;
+							that.showtip = true;
+							// that.stop();
+							setTimeout(() => {
+							 that.showtip = false;
+							}, 2000);
+						}, 400);
+					},
+					fail: (res) => {
+						uni.showToast({
+							title: '生成图片失败！请稍后再试'
+						});
+					},
+				}, this);
+			},
 			// 保存图片
-			longpress() {
+			saveImg() {
 				uni.saveImageToPhotosAlbum({
 					filePath: this.tempImg,
 					success: function(res) {
@@ -239,33 +319,6 @@
 					}
 				});
 			},
-
-			//生成图片
-			creatImage() {
-				var that = this
-				uni.canvasToTempFilePath({
-					canvasId: 'my-canvas',
-					quality: 1,
-					fileType: "jpg",
-					success: (res) => {
-						console.log('生成图片' + res);
-						that.tempImg = res.tempFilePath;
-						setTimeout(() => {
-							that.showImg=true;
-							that.showtip = true;
-							that.stop();
-							setTimeout(() => {
-								that.showtip = false;
-							}, 2000);
-						}, 400);
-					},
-					fail: (res) => {
-						uni.showToast({
-							title: '生成图片失败！请稍后再试'
-						});
-					},
-				}, this);
-			}
 		}
 	}
 </script>

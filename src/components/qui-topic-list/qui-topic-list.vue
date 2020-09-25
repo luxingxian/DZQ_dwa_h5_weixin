@@ -65,6 +65,7 @@
 							     style="width:100%;max-width: 100%;max-height:400rpx"
 							    :src="item.lastThread[0].firstPost.images[0].thumbUrl"
 							     v-if="item.lastThread[0].firstPost.images.length"
+								 mode="aspectFill"
 							    alt
 							  lazy-load
 							></image>

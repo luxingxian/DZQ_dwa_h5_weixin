@@ -160,6 +160,12 @@ export default {
     },
   },
   created() {
+	  // #ifdef MP-WEIXIN
+	  let navH=0
+	  // #endif
+	  // #ifdef H5
+	  let navH=88
+	  // #endif
     if (
       !(
         getApp() &&
@@ -171,14 +177,16 @@ export default {
       try {
         getApp().systemInfo = uni.getSystemInfoSync();
         const screenK = getApp().systemInfo.screenWidth / 750;
-		this.scv = getApp().systemInfo.windowHeight / screenK - 140;
+		this.scv = getApp().systemInfo.windowHeight / screenK - 140-navH;
       } catch (e) {
         console.error(`Painter get system info failed, ${JSON.stringify(e)}`);
       }
     } else {
       const screenK = getApp().systemInfo.screenWidth / 750;
-     this.scv = getApp().systemInfo.windowHeight / screenK - 140;
+     this.scv = getApp().systemInfo.windowHeight / screenK - 140-navH;
     }
+		console.log("this.scv",this.scv)
+		console.log("windowH",getApp().systemInfo.windowHeight)
   },
   onLoad(params) {
     this.navbarHeight = uni.getSystemInfoSync().statusBarHeight + 44;
@@ -196,7 +204,7 @@ export default {
     if (Object.keys(this.allEmoji).length < 1) {
       this.getEmoji();
     }
-	注释:onKeyboardHeightChange方法仅支持微信小程序
+	//注释:onKeyboardHeightChange方法仅支持微信小程序
     uni.onKeyboardHeightChange(res => {
       if (res.height > 0) {
         // 键盘弹出（滚动条位置增加键盘高度）
@@ -224,10 +232,12 @@ export default {
             data[0].forEach(item => {
               height += item.height;
             });
-            if (height > 600) {
-              this.scrollTop = height - 658 + 10;
-              this.old.scrollTop = height - 658 + 10;
+			console.log("chatHeight",height)
+            if (height > this.scv/2) {
+              this.scrollTop = height - this.scv/2+10;
+              this.old.scrollTop = height - this.scv/2+10;
             }
+			console.log("scrollTop",this.scrollTop)
           });
       });
     },
@@ -361,7 +371,7 @@ export default {
     popEmoji() {
       if (this.emojiShow) {
         this.scrollTop = this.old.scrollTop;
-        this.scrollToBottom();
+        // this.scrollToBottom();
         this.bottomPadding -= 204;
         // this.scrollTop = this.old.scrollTop;
         // this.$nextTick(() => {
@@ -369,7 +379,7 @@ export default {
         // });
       } else {
         this.scrollTop = this.old.scrollTop;
-        this.scrollToBottom(true);
+        // this.scrollToBottom(true);
         this.bottomPadding += 204;
         this.$nextTick(() => {
           this.scrollTop += 204;
@@ -384,10 +394,12 @@ export default {
       text = `${this.msg.slice(0, this.cursor) + code + this.msg.slice(this.cursor)}`;
       this.msg = text;
       this.cursor += code.length;
-      this.$nextTick(() => {
-        this.focus = true;
-        uni.hideKeyboard();
-      });
+      // this.$nextTick(() => {
+      //   this.focus = true;
+      //   uni.hideKeyboard();
+      // });
+	  this.bottomPadding -= 204;
+	  // this.scrollToBottom();
     },
     jumpUserPage(id) {
       if (id) {
