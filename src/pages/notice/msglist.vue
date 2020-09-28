@@ -160,12 +160,6 @@ export default {
     },
   },
   created() {
-	  // #ifdef MP-WEIXIN
-	  let navH=0
-	  // #endif
-	  // #ifdef H5
-	  let navH=88
-	  // #endif
     if (
       !(
         getApp() &&
@@ -177,16 +171,14 @@ export default {
       try {
         getApp().systemInfo = uni.getSystemInfoSync();
         const screenK = getApp().systemInfo.screenWidth / 750;
-		this.scv = getApp().systemInfo.windowHeight / screenK - 140-navH;
+		this.scv = getApp().systemInfo.windowHeight / screenK - 140;
       } catch (e) {
         console.error(`Painter get system info failed, ${JSON.stringify(e)}`);
       }
     } else {
       const screenK = getApp().systemInfo.screenWidth / 750;
-     this.scv = getApp().systemInfo.windowHeight / screenK - 140-navH;
+     this.scv = getApp().systemInfo.windowHeight / screenK - 140;
     }
-		console.log("this.scv",this.scv)
-		console.log("windowH",getApp().systemInfo.windowHeight)
   },
   onLoad(params) {
     this.navbarHeight = uni.getSystemInfoSync().statusBarHeight + 44;
@@ -232,12 +224,10 @@ export default {
             data[0].forEach(item => {
               height += item.height;
             });
-			console.log("chatHeight",height)
             if (height > this.scv/2) {
               this.scrollTop = height - this.scv/2+10;
               this.old.scrollTop = height - this.scv/2+10;
             }
-			console.log("scrollTop",this.scrollTop)
           });
       });
     },
