@@ -92,9 +92,9 @@
 					mask: true
 				})
 				this.ctx = uni.createCanvasContext('my-canvas', this)
-				//设置画布背景透明
-				this.ctx.setFillStyle('rgba(255, 255, 255, 0)')
-				//设置画布大小
+				//设置填充颜色
+				this.ctx.setFillStyle('#FFFFFF')
+				//设置背景填充区域大小即位置
 				this.ctx.fillRect(0, 0, this.canvasW, this.canvasH)
 				//画布中显示的文字行数
 				let linenum=0;
@@ -107,47 +107,45 @@
 				if (this.headerImg != '') {
 					//获取标题图片
 					let headerImg = await this.getImageInfo(this.headerImg);
-					//图片截取(以短边为准，截取固定比例，长边从中心开始截取)
-					let ratio = this.imgWidth / this.imgHeight;
-					let ratioOrigin = headerImg.width / headerImg.height;
-					if (ratio > ratioOrigin) {
-						this.x = 0;
-						this.y = (headerImg.height - (headerImg.width / ratio)) / 2;
-						this.w = headerImg.width;
-						this.h = headerImg.width / ratio;
-						this.scale = this.imgWidth / this.w
-					} else if (ratio < ratioOrigin) {
+					//图片截取(以短边为准，截取和设计稿中海报内图片相同比例，保证图片不变形，长边从中心开始截取)
+					let ratio = this.imgWidth / this.imgHeight;//设计稿中海报内图片宽高比
+					let ratioOrigin = headerImg.width / headerImg.height;//获取图片的宽高比
+					if (ratio > ratioOrigin) {//图片扩大/缩小到和海报中图片同一宽度时，高度偏长,
+						this.x = 0;//从图片的x位置开始绘制
+						this.y = (headerImg.height - (headerImg.width / ratio)) / 2;//从图片Y轴的y位置开始绘制，y位置为高度差的1/2
+						this.w = headerImg.width;//图片宽度
+						this.h = headerImg.width / ratio;//根据比例计算图片高度
+					} else if (ratio < ratioOrigin) {//图片偏宽
 						this.x = (headerImg.width - (headerImg.height * ratio)) / 2;
 						this.y = 0;
 						this.w = headerImg.height * ratio;
 						this.h = headerImg.height;
-						this.scale = this.imgHeight / this.h;
-					} else {
+					} else {//图片比例相等
 						this.x = 0;
 						this.y = 0;
 						this.w = headerImg.width;
 						this.h = headerImg.height;
-						this.scale = this.imgHeight / this.h;
 					}
 					//绘制截取图片
 					this.ctx.drawImage(headerImg.path, this.x, this.y, this.w, this.h, 0, 0, this.imgWidth, this.imgHeight);
-					//有图片下文字在剩余高度居中显示（限制最多8行，居中显示）
+					//参数说明(需要绘制的图片，X轴从图片的X位置开始，Y轴从图片的y位置开始，绘制图片宽度，绘制图片高度，X轴从画布的0开始，Y轴从画布的0开始，图片最终呈现在画布上的宽度(缩小或放大至该宽度)，图片最终呈现在画布上的高度(缩小或放大至该高度))
 					
+					//有图片下文字在剩余高度居中显示（限制最多8行，居中显示）
 					// #ifdef MP-WEIXIN
-					this.maxline=8;
+					this.maxline=7;
 					// #endif
 					// #ifdef H5
-					this.maxline=10;
+					this.maxline=9;
 					// #endif
 					linenum=this.row>this.maxline?this.maxline:this.row;
 					this.textY=((this.canvasH - this.imgHeight)-(linenum * this.lineheight)-bottomH)/2+this.imgHeight;
 				} else {
 					//无图片下文字在除底部的剩余高度居中（限制最多15行，居中显示）
 					// #ifdef MP-WEIXIN
-					this.maxline=16;
+					this.maxline=15;
 					// #endif
 					// #ifdef H5
-					this.maxline=18;
+					this.maxline=17;
 					// #endif
 					linenum=this.row>this.maxline?this.maxline:this.row;
 					this.textY=(this.canvasH-(linenum * this.lineheight)-bottomH)/2;
@@ -193,7 +191,7 @@
 				this.ctx.setFontSize(10);
 				this.ctx.textAlign = "left";
 				this.ctx.setFillStyle('#999');
-				this.ctx.fillText(this.username, 15, this.canvasH - 15, 100)
+				this.ctx.fillText(this.username, 15, this.canvasH - 15)
 				
 				//大文案名称
 				this.ctx.setFontSize(10);
@@ -210,7 +208,7 @@
 						uni.hideLoading();
 						this.creatImage()
 					})
-				}, 500)
+				}, 1000)
 			},
 
 			//截取字符串，按照br换号，截取

@@ -77,26 +77,26 @@ module.exports = {
     // port: 8080,
     // 代理请求
     // 更多代理设置请看：https://github.com/chimurai/http-proxy-middleware#options
-    proxy: {
-      '/api': {
-        target: 'http://www.70wenan.com',
-        changeOrigin: true,
-        ws: true,
-        // pathRewrite: {
-        //   '^/api': '',
-        // },
-      },
-    },
+    // proxy: {
+    //   '/api': {
+    //     target: 'http://www.70wenan.com',
+    //     changeOrigin: true,
+    //     ws: true,
+    //     // pathRewrite: {
+    //     //   '^/api': '',
+    //     // },
+    //   },
+    // },
 	// https:true
-		// proxy: {
-		//   '/api': {
-		//     target: 'https://www.dawenan.com',
-		//     changeOrigin: true,
-		//     ws: true,
-		//     pathRewrite: {
-		//       '^/api': '',
-		//     },
-		//   },
-		// },
+		proxy: {
+		  '/api': {
+		    target: 'https://www.dawenan.com',
+		    changeOrigin: true,
+		    ws: true,
+		    pathRewrite: {
+		      '^/api': '',
+		    },
+		  },
+		},
   },
 };
